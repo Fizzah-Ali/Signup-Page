@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>Login</title> 
+  <link rel="stylesheet" href="signup-Login.css">
+  <script type="text/javascript" src="validation.js" defer></script>
+</head>
+<body>
+
+  <!-- Firebase Authentication Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      sendPasswordResetEmail,
+      GoogleAuthProvider,
+      signInWithPopup
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDtL0Ib-ltd1O1MpAG3pWXvBhPqkwnjEXg",
+      authDomain: "bbuys-auth.firebaseapp.com",
+      projectId: "bbuys-auth",
+      storageBucket: "bbuys-auth.firebasestorage.app",
+      messagingSenderId: "973308548830",
+      appId: "1:973308548830:web:6b9f282c30979cde43d44f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Email/Password Login
+    const loginForm = document.getElementById('form');
+    loginForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const email = document.getElementById("email-input").value;
+      const password = document.getElementById("password-input").value;
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          window.location.replace("home.html");
+        })
+        .catch((error) => {
+          const errorMessage = error.message;
+          document.getElementById("error-message").innerText = errorMessage;
+        });
+    });
+
+    // Google Login
+    const provider = new GoogleAuthProvider();
+    const googleBtn = document.getElementById("google-signin");
+
+    if (googleBtn) {
+      googleBtn.addEventListener("click", () => {
+        signInWithPopup(auth, provider)
+          .then((result) => {
+            window.location.href = "home.html";
+          })
+          .catch((error) => {
+            const errorMessage = error.message;
+            document.getElementById("error-message").innerText = errorMessage;
+          });
+      });
+    }
+
+    // Forgot Password
+    const forgotPasswordLink = document.getElementById("forgot-password-link");
+
+    if (forgotPasswordLink) {
+      forgotPasswordLink.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById("email-input").value;
+
+        if (!email) {
+          document.getElementById("error-message").innerText = "Please enter your email above to reset your password.";
+          return;
+        }
+
+        sendPasswordResetEmail(auth, email)
+          .then(() => {
+            document.getElementById("error-message").innerText = "✅ Password reset email sent.";
+          })
+          .catch((error) => {
+            const errorMessage = error.message;
+            document.getElementById("error-message").innerText = errorMessage;
+          });
+      });
+    }
+  </script>
+
+  <!-- Login UI -->
+  <div class="wrapper">
+    <h1>Login</h1>
+    <p id="error-message"></p>
+    <form id="form">
+      <div>
+        <label for="email-input">
+          <span>@</span>
+        </label>
+        <input type="email" name="email" id="email-input" placeholder="Email">
+      </div>
+      <div>
+        <label for="password-input">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
+            <path d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm240-200q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80Z"/>
+          </svg>
+        </label>
+        <input type="password" name="password" id="password-input" placeholder="Password">
+      </div>
+
+      <!-- Forgot Password -->
+      <p class="forgot-password">
+        <a href="#" id="forgot-password-link">Forgot Password?</a>
+      </p>
+
+      <button type="submit">Login</button>
+
+      <button type="button" id="google-signin" class="google-btn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
+        Continue with Google
+      </button>
+    </form>
+
+    <p>New here? <a href="signup.html">Create an Account</a></p>
+  </div>
+</body>
+</html>

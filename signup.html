@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Signup</title>
+  <link rel="stylesheet" href="signup.css" />
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      createUserWithEmailAndPassword,
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDtL0Ib-ltd1O1MpAG3pWXvBhPqkwnjEXg",
+      authDomain: "bbuys-auth.firebaseapp.com",
+      projectId: "bbuys-auth",
+      storageBucket: "bbuys-auth.firebasestorage.app",
+      messagingSenderId: "973308548830",
+      appId: "1:973308548830:web:6b9f282c30979cde43d44f",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const daySelect = document.getElementById("dob-day");
+      const yearSelect = document.getElementById("dob-year");
+
+      for (let i = 1; i <= 31; i++) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = i;
+        daySelect.appendChild(option);
+      }
+
+      const currentYear = new Date().getFullYear();
+      for (let y = 1950; y <= currentYear; y++) {
+        const option = document.createElement("option");
+        option.value = y;
+        option.textContent = y;
+        yearSelect.appendChild(option);
+      }
+
+      const googleBtn = document.getElementById("google-signin");
+      googleBtn.addEventListener("click", () => {
+        const provider = new GoogleAuthProvider();
+        signInWithPopup(auth, provider)
+          .then(() => {
+            window.location.href = "home.html";
+          })
+          .catch((error) => {
+            document.getElementById("error-message").innerText = error.message;
+          });
+      });
+
+      const signupForm = document.getElementById("form");
+      signupForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const name = document.getElementById("firstname-input").value;
+        const email = document.getElementById("email-input").value;
+        const password = document.getElementById("password-input").value;
+        const repeatPassword = document.getElementById("repeat-password-input").value;
+        const dobDay = document.getElementById("dob-day").value;
+        const dobMonth = document.getElementById("dob-month").value;
+        const dobYear = document.getElementById("dob-year").value;
+        const whatsappCode = document.getElementById("country-code").value;
+        const whatsappNumber = document.getElementById("whatsapp-number").value;
+
+        if (password !== repeatPassword) {
+          document.getElementById("error-message").innerText = "Passwords do not match.";
+          return;
+        }
+
+        try {
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          const user = userCredential.user;
+
+          await setDoc(doc(db, "users", user.uid), {
+            name,
+            email,
+            dob: `${dobDay}-${dobMonth}-${dobYear}`,
+            whatsapp: `${whatsappCode} ${whatsappNumber}`,
+            createdAt: new Date().toISOString(),
+          });
+
+          window.location.href = "home.html";
+        } catch (error) {
+          document.getElementById("error-message").innerText = error.message;
+        }
+      });
+    });
+  </script>
+</head>
+<body>
+  <div class="wrapper">
+    <h1>Signup</h1>
+    <p id="error-message"></p>
+    <form id="form">
+      <div>
+        <label for="firstname-input">👤</label>
+        <input type="text" id="firstname-input" placeholder="Name" required />
+      </div>
+      <div>
+        <label for="email-input">@</label>
+        <input type="email" id="email-input" placeholder="Email" required />
+      </div>
+      <div class="input-container dob-container">
+        <label for="dob-day">📅</label>
+        <div class="dob-selects">
+          <select id="dob-day" required><option value="">Day</option></select>
+          <select id="dob-month" required>
+            <option value="">Month</option>
+            <option value="January">Jan</option>
+            <option value="February">Feb</option>
+            <option value="March">Mar</option>
+            <option value="April">Apr</option>
+            <option value="May">May</option>
+            <option value="June">Jun</option>
+            <option value="July">Jul</option>
+            <option value="August">Aug</option>
+            <option value="September">Sep</option>
+            <option value="October">Oct</option>
+            <option value="November">Nov</option>
+            <option value="December">Dec</option>
+          </select>
+          <select id="dob-year" required><option value="">Year</option></select>
+        </div>
+      </div>
+      <div class="input-container whatsapp-container">
+        <label for="whatsapp-number">📱</label>
+        <div class="whatsapp-fields">
+          <select id="country-code" required>
+            <option value="+92">+92</option>
+            <option value="+91">+91</option>
+            <option value="+1">+1</option>
+            <option value="+93">+93</option>
+            <option value="+44">+44</option>
+            <option value="+61">+61</option>
+            <option value="+966">+966</option>
+            <option value="+71">+71</option>
+          </select>
+          <input type="tel" id="whatsapp-number" placeholder="Enter WhatsApp Number" required />
+        </div>
+      </div>
+      <div>
+        <label for="password-input">🔒</label>
+        <input type="password" id="password-input" placeholder="Password" required />
+      </div>
+      <div>
+        <label for="repeat-password-input">🔒</label>
+        <input type="password" id="repeat-password-input" placeholder="Repeat Password" required />
+      </div>
+      <button type="submit">Signup</button>
+      <button type="button" id="google-signin" class="google-btn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo" />
+        Continue with Google
+      </button>
+      <p class="login-link">Already have an Account? <a href="login.html">Login</a></p>
+    </form>
+  </div>
+</body>
+</html>
